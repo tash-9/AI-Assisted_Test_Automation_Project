@@ -1,0 +1,422 @@
+{
+  "info": {
+    "name": "Reqres API Automation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "x-api-key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Q3 — Login and capture authToken",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Login status is 200\", function () { pm.response.to.have.status(200); });",
+              "const resp = pm.response.json();",
+              "pm.test(\"Auth token is received\", function () { pm.expect(resp.token).to.be.a(\"string\").and.not.empty; });",
+              "pm.environment.set(\"authToken\", resp.token);",
+              "pm.environment.set(\"loginEmail\", JSON.parse(pm.request.body.raw).email);",
+              "pm.test(\"Auth token saved successfully\", function () { pm.expect(pm.environment.get(\"authToken\")).to.eql(resp.token); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"eve.holt@reqres.in\",\n  \"password\": \"cityslicka\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Q4 — GET user by userId",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+              "const resp = pm.response.json().data;",
+              "pm.test(\"User ID is 2\", function () { pm.expect(resp.id).to.eql(2); });",
+              "pm.test(\"User name matches\", function () { pm.expect(resp.first_name + \" \" + resp.last_name).to.eql(\"Janet Weaver\"); });",
+              "pm.test(\"User email matches\", function () { pm.expect(resp.email).to.eql(\"janet.weaver@reqres.in\"); });",
+              "pm.environment.set(\"userId\", resp.id);",
+              "pm.environment.set(\"userName\", resp.first_name + \" \" + resp.last_name);",
+              "pm.environment.set(\"userEmail\", resp.email);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/users/2",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "users",
+            "2"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Q5 — PUT updated profile",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"PUT status code is 200\", function () { pm.response.to.have.status(200); });",
+              "const resp = pm.response.json();",
+              "pm.test(\"Updated name is correct\", function () { pm.expect(resp.name).to.eql(\"Test User\"); });",
+              "pm.test(\"Updated job is correct\", function () { pm.expect(resp.job).to.eql(\"QA Engineer\"); });",
+              "pm.test(\"updatedAt is a valid timestamp\", function () {",
+              "    pm.expect(resp.updatedAt).to.be.a(\"string\");",
+              "    pm.expect(Date.parse(resp.updatedAt)).to.not.be.NaN;",
+              "});",
+              "pm.test(\"updatedAt is recent (within 5 minutes)\", function () {",
+              "    pm.expect(Math.abs(Date.now() - Date.parse(resp.updatedAt))).to.be.below(5 * 60 * 1000);",
+              "});",
+              "pm.environment.set(\"putUpdatedAt\", resp.updatedAt);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/users/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{userId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test User\",\n  \"job\": \"QA Engineer\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Q6 — PATCH single field",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"PATCH status code is 200\", function () { pm.response.to.have.status(200); });",
+              "const resp = pm.response.json();",
+              "pm.test(\"Job updated successfully\", function () { pm.expect(resp.job).to.eql(\"Senior QA Engineer\"); });",
+              "pm.test(\"updatedAt is a valid timestamp\", function () {",
+              "    pm.expect(resp.updatedAt).to.be.a(\"string\");",
+              "    pm.expect(Date.parse(resp.updatedAt)).to.not.be.NaN;",
+              "});",
+              "pm.test(\"Only the patched field changed (no other profile fields returned)\", function () {",
+              "    pm.expect(Object.keys(resp).filter(k => k !== \"updatedAt\")).to.eql([\"job\"]);",
+              "    pm.expect(resp).to.not.have.property(\"name\");",
+              "});",
+              "pm.test(\"updatedAt is not older than the PUT timestamp\", function () {",
+              "    pm.expect(Date.parse(resp.updatedAt)).to.be.at.least(Date.parse(pm.environment.get(\"putUpdatedAt\")) - 1000);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/users/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{userId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"job\": \"Senior QA Engineer\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Q8A — User not found (stored userId + 21)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.environment.set(\"invalidUserId\", Number(pm.environment.get(\"userId\")) + 21);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+              "pm.test(\"Status is a 4xx error\", function () { pm.expect(pm.response.code).to.be.within(400, 499); });",
+              "pm.test(\"Response is valid JSON\", function () { pm.response.to.be.json; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/users/{{invalidUserId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{invalidUserId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Q8B — Login without password (stored email)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Status is a 4xx error\", function () { pm.expect(pm.response.code).to.be.within(400, 499); });",
+              "pm.test(\"Error message is returned\", function () { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{loginEmail}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Q8C — Login with unregistered email (built from stored email)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.environment.set(\"unregisteredEmail\", \"unknown.\" + pm.environment.get(\"userEmail\"));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+              "pm.test(\"Status is a 4xx error\", function () { pm.expect(pm.response.code).to.be.within(400, 499); });",
+              "pm.test(\"Error message is returned\", function () { pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{unregisteredEmail}}\",\n  \"password\": \"cityslicka\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Q8D — GET user with invalid API key (stored userId)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is a 4xx error\", function () { pm.expect(pm.response.code).to.be.within(400, 499); });",
+              "pm.test(\"Request is rejected (not 200)\", function () { pm.expect(pm.response.code).to.not.eql(200); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}"
+          },
+          {
+            "key": "x-api-key",
+            "value": "invalid-api-key"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/users/{{userId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{userId}}"
+          ]
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    }
+  ]
+}

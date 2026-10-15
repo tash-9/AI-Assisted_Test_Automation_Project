@@ -1,0 +1,19 @@
+{
+  "name": "automation-testing-project-playwright-postman",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test:q1": "node run.js ui tests/q1-locked-out-user-login.spec.js",
+    "test:q2": "node run.js ui tests/q2-standard-user-purchase.spec.js",
+    "test:q3": "node run.js ui tests/q3-performance-glitch-user-purchase.spec.js",
+    "test:ui": "node run.js ui",
+    "test:api": "node run.js api",
+    "test:all": "node run.js all",
+    "report:playwright": "playwright show-report playwright-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.23.1"
+  }
+}
