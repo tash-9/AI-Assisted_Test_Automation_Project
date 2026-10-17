@@ -30,8 +30,8 @@ UI and API automation for the Automation Testing Assessment.
 ## Setup
 
 ```bash
-git clone <YOUR-REPOSITORY-URL>
-cd <repository-folder>
+git clone https://github.com/tash-9/AI-Assisted_Test_Automation_Project/
+cd AI-Assisted_Test_Automation_Project
 npm install
 npx playwright install chromium
 ```
@@ -94,6 +94,4 @@ npm run test:all     # UI (sequential) then API, with all reports generated
 - SauceDemo test data: users `locked_out_user`, `standard_user`, `performance_glitch_user`; password `secret_sauce`.
 
 ## Author
-
 Tasfia Islam Raisha
-# AI-Assisted_Test_Automation_Project
